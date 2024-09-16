@@ -1,0 +1,87 @@
+Anna Kurchenko
+
+1. 
+Column = 530.00
+Row = 396.00
+
+2. 
+Looking at the grayscale image, do you notice anything wrong with it?  
+Do you notice any watermarks, writing, or copyright information on the image? 
+    I notice there is an RIT logo with the GCCIS college name on it 
+
+3. 
+What does this image look like: 
+    This image looks like you flattened the black and gray image to only 2 tones of black and white
+    And then inverted the colors 
+What is the data type of b_low_values?
+    logical, mask only containing 1s and 0s 
+
+4. 
+a. Does the green channel best mimic the grayscale value? 
+    Yes, its almost identical
+b. Which channel has the WORST quality?  What is wrong with it?   
+What do you notice in this channel?   
+What kinds of artifacts did you notice in this channel? 
+    Blue is the worst channel, it completeley distorts the skintone and makes it blend in with the t-shirt and hair
+    In this image the text on his t-shirt is hard ot recognize, and the glasses pop on his face more and almost obstruct his face. 
+    I notice in this channel the color values are almost flipped and the lights are almost as visible as the darks. 
+
+5. 
+ [INSERT COPY PIC]
+
+6. a
+code used: 
+m_in_rgb = im2double(imread('HW_01_Anna_Kurchenko_DIR/Kitchen_Kolors_4670_ss.jpg')); 
+[im_red, im_grn, im_blu] = imsplit(im_in_rgb);
+
+im_red_bin = im_red >= 0.5;
+im_grn_bin = im_grn >= 0.5;
+im_blu_bin = im_blu >= 0.5;
+
+im_red_bin = double(im_red_bin);
+im_grn_bin = double(im_grn_bin);
+im_blu_bin = double(im_blu_bin);
+im_new_part_a = cat(3, im_red_bin, im_grn_bin, im_blu_bin);
+
+figure;
+imshow(im_new_part_a);
+
+[iNSERT IMAGE]
+
+
+b. 
+code used: 
+im_quantized = round(im_in_rgb * 4) / 4.0;
+figure;
+imshow(im_quantized);
+
+This image does look better than the previous image. 
+
+c. 
+This is code used: 
+num_levels = 6;
+im_quantized = round(im_in_rgb * (num_levels - 1)) / (num_levels - 1);
+
+figure;
+imshow(im_quantized);
+
+This image is not really better than from part b. , its kind of the same
+
+d. 
+Total Colors=6^3=216
+The number of actual unique colors was only 105. 
+
+7. 
+[INSERT PIC]
+
+8. 
+
+I think it was really intersting to manipulate images in this homework like we did. I especially liked 
+working with the Kitchen_kolors image, I found it visually interesting. I learned that splitting up an image in more than 
+four levels of color channel does not really change aything, but the jump from 2 channels to 4 is really noticeable. 
+I also learned about color quantization, which besides sounding cool, is a cool operation as well. 
+
+I was surprised mostly by how easily it is to manipulate images, at least in MATLAB, by only adjusting the color channels. 
+Also it was cool to line up all of my image manipulations next to each other and compare what operations caused what differences, and how 
+they each altered my perception of the image. 
+
