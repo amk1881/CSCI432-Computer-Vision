@@ -44,18 +44,16 @@ end
 
 function solver(image_path)
     orig_img = imread(image_path);
-    imagesc(orig_img);
-    
     % Convert to grayscale and enhance contrast
     gray_img = rgb2gray(orig_img);
     enhanced_img = imadjust(gray_img);
 
     dominoes = extract_dominoes_best_rotation(enhanced_img);
     % Count spots on the dominoes
-    dominoes = count_domino_spots(dominoes);
+    %dominoes = count_domino_spots(dominoes);
 
     % Visualize the results
-    visualize_dominoes(orig_img, dominoes);
+    %visualize_dominoes(orig_img, dominoes);
 
     %dominoes = fudge_nums(dominoes);
 
@@ -91,7 +89,7 @@ end
 
 function [left_count, right_count] = count_spots(domino_img)
     % Resize to standard size for better consistency (optional)
-    domino_img = imresize(domino_img, [100, NaN]);
+    domino_img = imresize(domino_img, [500, NaN]);
     % Apply Gaussian smoothing to reduce noise
     smoothed_img = imgaussfilt(domino_img, 0.1); % Adjust sigma as needed
 
@@ -102,7 +100,10 @@ function [left_count, right_count] = count_spots(domino_img)
     % Convert to binary image with a lowered threshold
     binary_img = imbinarize(enhanced_img, 'adaptive', 'Sensitivity', 0.4);
     binary_img = imcomplement(binary_img); % Invert to detect dark spots
-
+    binary_img = enhanced_img;
+    imshow(binary_img);
+    figure;
+    title("here")
     
     % Split into left and right halves
     mid_col = floor(size(binary_img, 2) / 2);
@@ -231,7 +232,7 @@ function dominoes = extract_dominoes_best_rotation(input_img)
     end
     
     % Debugging: Visualize rotated bounding boxes
-    %{
+    
     figure; imshow(input_img); hold on;
     for i = 1:length(dominoes)
         % Draw the rotated bounding box
@@ -241,10 +242,10 @@ function dominoes = extract_dominoes_best_rotation(input_img)
         % Display orientation angle
         text(dominoes(i).centroid(1), dominoes(i).centroid(2), ...
              sprintf('%.1f°', dominoes(i).orientation), ...
-             'Color', 'yellow', 'FontSize', 8);
+             'Color', 'blue', 'FontSize', 12);
     end
     title('Detected Dominoes with Oriented Bounding Boxes');
-    %}
+    
 end
 
 function [rotated_bb, rotation_angle] = minBoundingBox(points)
