@@ -2,44 +2,42 @@
 %domino_chain_solver("CSCI432-Computer-Vision/Project/IMG_5402_DIRT_EASY.JPG")
 %test('CSCI432-Computer-Vision/Project/IMG_5402_DIRT_EASY.JPG"')
 image_path = "CSCI432-Computer-Vision/Project/IMG_5402_DIRT_EASY.JPG";
-img = imread(image_path);
-gray_img = rgb2gray(img);
-enhanced_img = imadjust(gray_img);
-
-
-%domino_chain_solver(image_path);
-%dominoes = extract_dominoes_best_rotation(enhanced_img);
 
 solver(image_path);
 
 
+% This function is used to correct the image processed domino values, 
+% for the sake of testing the game play portion of the assignment. 
 function dominoes = fudge_nums(dominoes)
-    dominoes(2).leftSpots = 0;
-    dominoes(2).rightSpots = 3;
+    dominoes(1).leftSpots = 12;
+    dominoes(1).rightSpots = 1; 
 
-    dominoes(3).leftspots = 3;
-    dominoes(3).rightSpots = 5;
+    dominoes(3).leftSpots = 0;
+    dominoes(3).rightSpots = 3;
 
-    dominoes(4).leftSpots = 5;
-    dominoes(4).rightSpots = 2;
+    dominoes(4).leftspots = 3;
+    dominoes(4).rightSpots = 5;
+
+    dominoes(2).leftSpots = 5;
+    dominoes(2).rightSpots = 2;
 
     dominoes(5).leftSpots = 2;
     dominoes(5).rightSpots = 6;
 
-    dominoes(6).leftSpots = 4;
-    dominoes(6).rightSpots = 6;
+    dominoes(10).leftSpots = 6;
+    dominoes(10).rightSpots = 4;
 
     dominoes(7).leftSpots = 8;
     dominoes(7).rightSpots = 4;
 
-    dominoes(8).leftSpots = 7;
-    dominoes(8).rightSpots = 8;
+    dominoes(6).leftSpots = 8;
+    dominoes(6).rightSpots = 7;
 
     dominoes(9).leftSpots = 1;
     dominoes(9).rightSpots = 7;
 
-    dominoes(10).leftSpots = 0;
-    dominoes(10).rightSpots = 0;
+    dominoes(8).leftSpots = 0;
+    dominoes(8).rightSpots = 0;
     
 end
 
@@ -54,25 +52,28 @@ function solver(image_path)
     dominoes = count_domino_spots(dominoes);
 
     % Visualize the results
-    %visualize_dominoes(orig_img, dominoes);
+    visualize_dominoes(orig_img, dominoes);
 
-    dominoes = fudge_nums(dominoes);
+    %dominoes = fudge_nums(dominoes);
+    %disp('pre chaining doms');
+    %for i=1:length(dominoes)
+    %    disp(['[', num2str(dominoes(i).leftSpots), ' | ', num2str(dominoes(i).rightSpots), ']']);
+    %end
 
     % Chain the dominoes
     longest_chain = chain_dominoes(dominoes);
-    for i=1:length(dominoes)
-        disp(['[', num2str(dominoes(i).leftSpots), ' | ', num2str(dominoes(i).rightSpots), ']']);
-    end
     
     % Display the results
-    %disp('Longest Chain:');
-    %for i = 1:length(longest_chain)
-    %    disp(['[', num2str(longest_chain(i).leftSpots), ' | ', num2str(longest_chain(i).rightSpots), ']']);
-    %end
+    disp('Longest Chain:');
+    for i = 1:length(longest_chain)
+        disp(['[', num2str(longest_chain(i).leftSpots), ' | ', num2str(longest_chain(i).rightSpots), ']']);
+    end
 end
 
+% handles the logistics of getting the longest chain of dominos 
+% given that we start with the bottom left domino. 
 function longest_chain = chain_dominoes(dominoes)
-    % Ensure the first domino (bottom-left) is valid to start with
+
     starting_index = 1; % Assume the bottom-left domino is at index 1
     if is_double(dominoes(starting_index))
         error('The starting domino cannot be a double.');
@@ -81,67 +82,99 @@ function longest_chain = chain_dominoes(dominoes)
     % Start building the chain from the bottom-left domino
     current_domino = dominoes(starting_index);
     unused_dominoes = dominoes; % Keep track of unused dominos
-    unused_dominoes(starting_index) = []; % Remove the starting domino
-    
+
+    unused_dominoes(starting_index) = []; % remove starting element
+
     % Start exploring the chain
     longest_chain = explore_chain(current_domino, unused_dominoes, [current_domino]);
-    
-    % Display the result
-    disp('Longest Chain:');
-    for i = 1:length(longest_chain)
-        fprintf('[%d | %d]\n', longest_chain(i).leftSpots, longest_chain(i).rightSpots);
-    end
 end
 
-function chain = explore_chain(current_domino, unused_dominoes, current_chain)
-    % Extract the spots from the current domino
-    left = current_domino.leftSpots;
-    right = current_domino.rightSpots;
+% explore the chain of dominos to find matches and return the longest possible chain
+function current_chain = explore_chain(current_domino, unused_dominoes, current_chain)
+    % base case 
+    if length(unused_dominoes) == 0 
+        best_chain = current_chain;
 
-    % Initialize the best chain with the current chain
-    best_chain = current_chain;
+    else 
+        % Extract the spots from the bounds of the chain
+        current_left = current_chain(1).leftSpots;
+        current_right = current_chain(end).rightSpots;
 
-    % Explore all unused dominoes
-    for i = 1:length(unused_dominoes)
-        next_domino = unused_dominoes(i);
+        for i = 1:length(unused_dominoes)
+            next_domino = unused_dominoes(i);
+            %disp(['curr dom: ', num2str(current_left), ' | ', num2str(current_right) ]);
+            %disp(['next dom: ', num2str(next_domino.leftSpots), ' | ', num2str(next_domino.rightSpots) ]);
 
-        % Check if the next domino can chain with the current domino
-        if ~is_double(next_domino) && ...
-           (next_domino.leftSpots == left || next_domino.leftSpots == right || ...
-            next_domino.rightSpots == left || next_domino.rightSpots == right) && ...
-           ~is_number_in_chain(current_chain, next_domino.leftSpots) && ...
-           ~is_number_in_chain(current_chain, next_domino.rightSpots)
+            if ~is_double(next_domino) && ...
+                (next_domino.leftSpots == current_left || next_domino.leftSpots == current_right || ...
+                 next_domino.rightSpots == current_left || next_domino.rightSpots == current_right) && ...
+                ~is_number_in_chain(current_chain, current_domino, next_domino.leftSpots) && ...
+                ~is_number_in_chain(current_chain, current_domino, next_domino.rightSpots)
 
-            % Align the next domino to match the chain
-            if next_domino.rightSpots == left || next_domino.rightSpots == right
-                % Swap the spots to ensure proper alignment
-                next_domino = struct('leftSpots', next_domino.rightSpots, 'rightSpots', next_domino.leftSpots);
+                % Align the next domino to match the chain
+                if next_domino.rightSpots == current_left
+                    current_chain = [next_domino current_chain(1:end)]; % add the domino to chain
+                    current_left = current_chain(1).leftSpots;
+                    current_right = current_chain(end).rightSpots;
+  
+                elseif next_domino.leftSpots == current_right
+                    current_chain = [current_chain next_domino]; % add the domino to chain
+                    current_left = current_chain(1).leftSpots;
+                    current_right = current_chain(end).rightSpots;
+
+                elseif next_domino.rightSpots == current_right
+                    old_rightSpots = next_domino.rightSpots; % swap domino spots to imitate rotating 
+                    old_leftSpots = next_domino.leftSpots;
+                    next_domino.rightSpots = old_leftSpots;
+                    next_domino.leftSpots = old_rightSpots;
+
+                    current_chain = [current_chain next_domino]; % add the domino to chain
+                    current_left = current_chain(1).leftSpots;
+                    current_right = current_chain(end).rightSpots;
+                    
+                elseif next_domino.leftSpots == current_left
+                    old_rightSpots = next_domino.rightSpots; % swap domino spots to imitate rotating 
+                    old_leftSpots = next_domino.leftSpots;
+                    next_domino.rightSpots = old_leftSpots;
+                    next_domino.leftSpots = old_rightSpots;
+
+                    current_chain = [next_domino current_chain(1:end)]; % add the domino to chain
+                    current_left = current_chain(1).leftSpots;
+                    current_right = current_chain(end).rightSpots;
+                    
+                end
+                    % Display the result
+                %disp('updated Chain:');
+                %for j = 1:length(current_chain)
+                %    fprintf('[%d | %d]\n', current_chain(j).leftSpots, current_chain(j).rightSpots);
+                %end
+                new_unused_dominoes = unused_dominoes;
+                new_unused_dominoes(i) = [];   % removed next_domino since we added it to chain 
+                new_chain = explore_chain(next_domino, new_unused_dominoes, current_chain);
+
+                if length(new_chain) > length(current_chain)
+                    current_chain = new_chain;
+                end
             end
-
-            % Recursively explore the chain
-            new_unused_dominoes = unused_dominoes;
-            new_unused_dominoes(i) = []; % Remove the used domino
-            new_chain = explore_chain(next_domino, new_unused_dominoes, [current_chain, next_domino]);
-
-            % Update the best chain if the new chain is longer
-            if length(new_chain) > length(best_chain)
-                best_chain = new_chain;
-            end
-        end
+        end 
     end
 
-    % Return the best chain found
-    chain = best_chain;
 end
 
+% Function determineds if domino is elligible and doesn't contain same left/right vals
 function flag = is_double(domino)
     % Check if the domino is a double
     flag = domino.leftSpots == domino.rightSpots;
 end
 
-function flag = is_number_in_chain(chain, number)
-    % Check if a number already exists in the chain
-    flag = any(arrayfun(@(d) d.leftSpots == number || d.rightSpots == number, chain));
+% check that the domino value is not elsewhere present in the chain, but 
+% make sure that this search excludes the current comparison
+function flag = is_number_in_chain(chain, current_domino, number)
+    % Check if the number exists in the chain, excluding the current domino
+    flag = any(arrayfun(@(d) ...
+        (d.leftSpots == number || d.rightSpots == number) && ...
+        ~(d.leftSpots == current_domino.leftSpots && d.rightSpots == current_domino.rightSpots), ...
+        chain));
 end
 
 
@@ -216,6 +249,7 @@ function visualize_dominoes(orig_img, dominoes)
 end
 
 
+% Find each domino object in the image and create a struct with information about the domino
 function dominoes = extract_dominoes_best_rotation(input_img)
     gray_img = rgb2gray(input_img);
     enhanced_img = imadjust(gray_img);
