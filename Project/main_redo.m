@@ -41,6 +41,7 @@ function dominoes = fudge_nums(dominoes)
     
 end
 
+% Main functionality handles individual tasks
 function solver(image_path)
     orig_img = imread(image_path);
     % Convert to grayscale and enhance contrast
@@ -364,76 +365,6 @@ function [rotated_bb, rotation_angle] = minBoundingBox(points)
     % Rotate the bounding box back to original space
     rotated_bb = (box_pca * coeff')';
     rotation_angle = atan2d(coeff(2, 1), coeff(1, 1)); % Angle of the principal axis
-end
-
-
-
-function cropped_img = rotateAndCrop(input_img, boundingBox, rotation_angle)
-
-    %figure; imshow(input_img); hold on;
-    %plot(boundingBox(1, :), boundingBox(2, :), 'r-', 'LineWidth', 2);
-    %title('Original Image with Bounding Box');
-
-    % Center of the bounding box
-    center_x = mean(boundingBox(1, :));
-    center_y = mean(boundingBox(2, :));
-    %center_x = (max(boundingBox(1, :)) + min(boundingBox(1, :))) / 2;
-    %center_y = (max(boundingBox(2, :)) + min(boundingBox(2, :))) / 2;
-
-
-    % Pad the image to avoid cropping during rotation
-    %[img_h, img_w, ~] = size(input_img);
-    %padded_img = padarray(input_img, [img_h, img_w], 'replicate');
-    %center_offset = [size(padded_img, 2)/2; size(padded_img, 1)/2]; % Offset due to padding
-
-    % Rotate the entire image
-    rotated_img = imrotate(input_img, -rotation_angle, 'bilinear', 'crop');
-
-    % Transform the bounding box corners
-    bbox_centered = boundingBox - [center_x; center_y]; % Centered coordinates
-    rotation_matrix = [cosd(rotation_angle), -sind(rotation_angle); ...
-                       sind(rotation_angle),  cosd(rotation_angle)];
-    %rotated_bbox = rotation_matrix * bbox_centered + ...
-    %               repmat([center_x; center_y], 1, size(bbox_centered, 2)) + ...
-    %               repmat(center_offset, 1, size(bbox_centered, 2));
-    rotated_bbox = rotation_matrix * bbox_centered ;%+ center_offset;
-
-
-    %figure; imshow(rotated_img); hold on;
-%plot(rotated_bbox(1, :), rotated_bbox(2, :), 'g-', 'LineWidth', 2);
-%title('Rotated Image with Transformed Bounding Box');
-figure; imshow(rotated_img); hold on;
-% Original bounding box
-plot(boundingBox(1, :), boundingBox(2, :), 'r-', 'LineWidth', 2, 'DisplayName', 'Original BB');
-% Rotated bounding box
-plot(rotated_bbox(1, :), rotated_bbox(2, :), 'g-', 'LineWidth', 2, 'DisplayName', 'Rotated BB');
-legend;
-title('Bounding Boxes Before and After Rotation');
-
-
-
-    % Extract the rotated bounding box region
-    min_x = round(min(rotated_bbox(1, :)));
-    max_x = round(max(rotated_bbox(1, :)));
-    min_y = round(min(rotated_bbox(2, :)));
-    max_y = round(max(rotated_bbox(2, :)));
-
-    
-
-    % Crop the rotated region
-    %cropped_img = rotated_img(max(min_y,1):min(max_y,img_h), max(min_x,1):min(max_x,img_w), :);
-    %imagesc(cropped_img);
-    %figure;
-    %title('cropped image'); axis image; 
-
-    min_row = min(rotated_bbox(:,2));
-    max_row = max(rotated_bbox(:,2));
-    min_col = min(rotated_bbox(:,1));
-    max_col = max(rotated_bbox(:,1));
-
-    % Crop the rotated domino
-    cropped_img = imcrop(rotated_img_full, [min_col, min_row, max_col-min_col, max_row-min_row]);
-    
 end
 
 
